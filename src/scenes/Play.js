@@ -14,9 +14,9 @@ class Play extends Phaser.Scene {
         this.add.rectangle(0, 0, borderUISize, game.config.height, 0xa30000).setOrigin(0, 0)
         this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xa30000).setOrigin(0, 0)
         // add rocket (p1)
-        this.player = new Player(this, game.config.width + borderUISize + borderPadding, game.config.height/2, 'player').setOrigin(0, 0)
+        this.player = new Player(this, borderUISize + borderPadding*8, game.config.height/2, 'player').setOrigin(0, 0)
         // add spaceships (x3)
-        this.wall = new Obstacles(this, game.config.width,game.config.height/2, 'wall').setOrigin(0, 0)
+        this.wall = new Obstacles(this, game.config.width ,game.config.height/2, 'wall').setOrigin(0, 0)
         // define keys
         keySPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
         // initialize score
@@ -45,6 +45,7 @@ class Play extends Phaser.Scene {
             this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press SPACE to Restart', scoreConfig).setOrigin(0.5)
             this.gameOver = true
         }, null, this)
+        this.player.setDepth(100)
     }
 
     update() {
