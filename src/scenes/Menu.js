@@ -5,8 +5,9 @@ class Menu extends Phaser.Scene {
     
     preload(){
         // load images/tile sprites
-        this.load.image('rocket', './assets/rocket.png')
+        this.load.image('player', './assets/player.png')
         this.load.image('starfield', './assets/starfield.png')
+        this.load.image('wall', './assets/wall.png')
         // load spritesheet
         this.load.spritesheet('explosion', './assets/explosion.png', {
             frameWidth: 64,
@@ -15,9 +16,9 @@ class Menu extends Phaser.Scene {
             endFrame: 3
         })
         // load audio
-        this.load.audio('sfx-select', './assets/sfx-select.wav')
-        this.load.audio('sfx-explosion', './assets/sfx-explosion.wav')
-        this.load.audio('sfx-shot', './assets/sfx-shot.wav')
+        //this.load.audio('sfx-select', './assets/sfx-select.wav')
+        //this.load.audio('sfx-explosion', './assets/sfx-explosion.wav')
+        //this.load.audio('sfx-shot', './assets/sfx-shot.wav')
     }
 
     create() {
@@ -26,10 +27,10 @@ class Menu extends Phaser.Scene {
             key: 'explode',
             frames: this.anims.generateFrameNumbers('explosion', { 
                 start: 0, 
-                end: 9, 
+                end: 3, 
                 first: 0
             }),
-            frameRate: 30
+            frameRate: 10
         })
 
         let menuConfig={
@@ -50,27 +51,17 @@ class Menu extends Phaser.Scene {
         menuConfig.color='#000'
         this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding, 'Press left for Easy Mode and right for Hard Mode', menuConfig).setOrigin(0.5)
         // define keys
-        keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT)
-        keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT)
+        keySPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
     }
 
     update() {
-        if (Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+        if (Phaser.Input.Keyboard.JustDown(keySPACE)) {
           // easy mode
           game.settings = {
             spaceshipSpeed: 3,
             gameTimer: 60000    
           }
-          this.sound.play('sfx-select')
-          this.scene.start('playScene')    
-        }
-        if (Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
-          // hard mode
-          game.settings = {
-            spaceshipSpeed: 4,
-            gameTimer: 45000    
-          }
-          this.sound.play('sfx-select')
+          //this.sound.play('sfx-select')
           this.scene.start('playScene')    
         }
     }
