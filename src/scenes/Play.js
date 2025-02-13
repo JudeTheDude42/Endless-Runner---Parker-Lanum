@@ -15,14 +15,12 @@ class Play extends Phaser.Scene {
         this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xa30000).setOrigin(0, 0)
         // add rocket (p1)
         this.player = new Player(this, borderUISize + borderPadding*8, game.config.height/2, 'player').setOrigin(0, 0)
-        // add spaceships (x3)
-        this.wall = new Obstacles(this, game.config.width ,game.config.height/2, 'wall').setOrigin(0, 0)
         // define keys
         keySPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
         // initialize score
         this.score = 0
         // display score
-        let scoreConfig = {
+        this.scoreConfig = {
             fontFamily: 'Courier',
             fontSize: '28px',
             backgroundColor: '#F3B141',
@@ -34,35 +32,41 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 100
         }
-        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, scoreConfig)
+        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, this.scoreConfig)
         // GAME OVER flag
         this.gameOver = false
 
         // 60-second play clock
-        scoreConfig.fixedWidth = 0
-        this.clock = this.time.delayedCall(60000, () => {
-            this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5)
-            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press SPACE to Restart', scoreConfig).setOrigin(0.5)
-            this.gameOver = true
-        }, null, this)
+        this.scoreConfig.fixedWidth = 0
         this.player.setDepth(100)
+        this.addWall()
+    }
+
+    addWall() {
+        this.wall = new Obstacles(this, game.config.width, 0, 'wall').setOrigin(0, 0)
     }
 
     update() {
+        //this.wall = new Obstacles(this, game.config.width/2 , 0, 'wall').setOrigin(0, 0)
           // check key input for restart
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keySPACE)) {
             this.scene.restart()
         }
-        this.starfield.tilePositionX += 3
+        this.starfield.tilePositionX += 1
         // check collisions
         if(this.checkCollision(this.player, this.wall)) {
-            this.player.reset()
-            this.shipExplode(this.wall)
+            //this.player.reset()
+            this.shipExplode(this.player)
+            this.gameOver=true
         } 
         if(!this.gameOver) {               
             this.player.update()         // update rocket sprite
-            this.wall.update()           // update spaceships (x3)
+            this.wall.update()           // update obstacles
         } 
+        if (this.gameOver){
+            this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', this.scoreConfig).setOrigin(0.5)
+            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press SPACE to Restart', this.scoreConfig).setOrigin(0.5)
+        }
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keySPACE)) {
             this.scene.start("menuScene")
         }
@@ -88,7 +92,7 @@ class Play extends Phaser.Scene {
         boom.anims.play('explode')           // play explode animation
         boom.on('animationcomplete', () => { // callback after ani completes
           ship.reset()                       // reset ship position
-          ship.alpha = 1                     // make ship visible again
+          //ship.alpha = 1                     // make ship visible again
           boom.destroy()                     // remove explosion sprite
         })
         // score add and text update
