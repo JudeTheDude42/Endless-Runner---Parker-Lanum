@@ -46,11 +46,11 @@ class Menu extends Phaser.Scene {
             },
             fixedWidth: 0
         }
-        this.add.text(game.config.width/2, game.config.height/2 - borderUISize-borderPadding, 'ROCKET PATROL', menuConfig).setOrigin(0.5)
-        this.add.text(game.config.width/2, game.config.height/2, 'Use left and right arrows to move and F to fire!', menuConfig).setOrigin(0.5)
+        this.add.text(game.config.width/2, game.config.height/2 - borderUISize-borderPadding, 'INTO PLANET CRIMSON', menuConfig).setOrigin(0.5)
+        this.add.text(game.config.width/2, game.config.height/2, 'HOLD SPACE TO FLY UP AND RELEASE TO FLY DOWN! PRESS SPACE TO PLAY', menuConfig).setOrigin(0.5)
         menuConfig.backgroundColor='#00FF00'
         menuConfig.color='#000'
-        this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding, 'Press left for Easy Mode and right for Hard Mode', menuConfig).setOrigin(0.5)
+        //this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding, 'Press left for Easy Mode and right for Hard Mode', menuConfig).setOrigin(0.5)
         // define keys
         keySPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
     }
