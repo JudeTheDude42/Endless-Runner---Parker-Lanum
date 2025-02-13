@@ -4,15 +4,17 @@ class Play extends Phaser.Scene {
     }
     
     create() {
+        console.log("one")
         // place tile sprite
         this.starfield = this.add.tileSprite(0, 0, 640, 480, 'starfield').setOrigin(0, 0)
         // green UI background
         //this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0xa30000).setOrigin(0, 0)
         // white borders
-        this.add.rectangle(0, 0, game.config.width, borderUISize, 0xa30000).setOrigin(0, 0)
-        this.add.rectangle(0, game.config.height - borderUISize, game.config.width, borderUISize, 0xa30000).setOrigin(0, 0)
-        this.add.rectangle(0, 0, borderUISize, game.config.height, 0xa30000).setOrigin(0, 0)
-        this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xa30000).setOrigin(0, 0)
+        this.add.rectangle(0, 0, game.config.width, borderUISize, 0x000000).setOrigin(0, 0).setDepth(100)
+        this.add.rectangle(0, game.config.height - borderUISize, game.config.width, borderUISize, 0x000000).setOrigin(0, 0).setDepth(100)
+        this.add.rectangle(0, 0, borderUISize, game.config.height, 0x000000).setOrigin(0, 0).setDepth(100)
+        this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0x000000).setOrigin(0, 0).setDepth(100)
+        //this.add.rectangle(game.config.width - borderUISize*2  , borderUISize*1.8, borderUISize*2, borderUISize, 0xffffff).setOrigin(0, 0).setDepth(101) //score background
         // add rocket (p1)
         this.player = new Player(this, borderUISize + borderPadding*8, game.config.height/2, 'player').setOrigin(0, 0)
         // define keys
@@ -23,8 +25,8 @@ class Play extends Phaser.Scene {
         this.scoreConfig = {
             fontFamily: 'Courier',
             fontSize: '28px',
-            backgroundColor: '#F3B141',
-            color: '#8403605',
+            backgroundColor: '#000000',
+            color: '#a30000',
             align: 'right',
             padding: {
                 top: 5,
@@ -32,18 +34,27 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 100
         }
-        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, this.scoreConfig)
+        this.p1Score=0
+        this.scoreLeft = this.add.text(game.config.width - borderUISize - borderPadding*8, borderUISize + borderPadding*2, this.p1Score, this.scoreConfig)
+        this.scoreLeft.backgroundColor = '0xffffff'
         // GAME OVER flag
         this.gameOver = false
 
         // 60-second play clock
         this.scoreConfig.fixedWidth = 0
         this.player.setDepth(100)
-        this.addWall()
+        this.walls=[]
+        this.addWall(game.config.height/2)
+        this.counter=0
+        this.currHeight=0
+        this.prevHeight=game.config.height/2
     }
 
-    addWall() {
-        this.wall = new Obstacles(this, game.config.width, 0, 'wall').setOrigin(0, 0)
+    addWall(y) {
+        let wall = new Obstacles(this, game.config.width, y-400-game.config.height/2, 'wall').setOrigin(0, 0)
+        this.walls.push(wall)
+        wall = new Obstacles(this, game.config.width, y+400-game.config.height/2, 'wall').setOrigin(0, 0)
+        this.walls.push(wall)
     }
 
     update() {
@@ -52,16 +63,27 @@ class Play extends Phaser.Scene {
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keySPACE)) {
             this.scene.restart()
         }
+        this.counter++
+        if (this.counter>7){
+            this.counter=0
+            this.currHeight=Math.min(Math.max((this.prevHeight+((Phaser.Math.Between(-50, 50)))), 0), 480)
+            this.addWall(this.currHeight)
+            this.prevHeight=this.currHeight
+        }
         this.starfield.tilePositionX += 1
         // check collisions
-        if(this.checkCollision(this.player, this.wall)) {
-            //this.player.reset()
-            this.shipExplode(this.player)
-            this.gameOver=true
-        } 
+        for (let i of this.walls){
+            if(this.checkCollision(this.player, i)) {
+                //this.player.reset()
+                this.shipExplode(this.player)
+                this.gameOver=true
+            } 
+        }
         if(!this.gameOver) {               
             this.player.update()         // update rocket sprite
-            this.wall.update()           // update obstacles
+            for (let i of this.walls){
+                i.update()
+            }
         } 
         if (this.gameOver){
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', this.scoreConfig).setOrigin(0.5)
@@ -70,6 +92,8 @@ class Play extends Phaser.Scene {
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keySPACE)) {
             this.scene.start("menuScene")
         }
+        this.p1Score++
+        this.scoreLeft.text = this.p1Score    
     }
 
     checkCollision(rocket, ship) {
@@ -96,8 +120,6 @@ class Play extends Phaser.Scene {
           boom.destroy()                     // remove explosion sprite
         })
         // score add and text update
-        this.p1Score += ship.points
-        this.scoreLeft.text = this.p1Score    
         //this.sound.play('sfx-explosion')   
     }
 }
