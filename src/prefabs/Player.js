@@ -6,7 +6,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
       // add object to existing scene
       this.parentScene.add.existing(this)
       this.moveSpeed=2
-      //this.sfxShot = scene.sound.add('sfx-shot')
     }
 
     update() {
@@ -22,6 +21,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     reset(){
-
+      this.x=1000
+      this.y=1000
     }
 }

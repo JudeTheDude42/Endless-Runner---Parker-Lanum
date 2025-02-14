@@ -4,7 +4,6 @@ class Play extends Phaser.Scene {
     }
     
     create() {
-        console.log("one")
         // place tile sprite
         this.starfield = this.add.tileSprite(0, 0, 640, 480, 'starfield').setOrigin(0, 0)
         // green UI background
@@ -19,8 +18,6 @@ class Play extends Phaser.Scene {
         this.player = new Player(this, borderUISize + borderPadding*8, game.config.height/2, 'player').setOrigin(0, 0)
         // define keys
         keySPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-        // initialize score
-        this.score = 0
         // display score
         this.scoreConfig = {
             fontFamily: 'Courier',
@@ -35,12 +32,11 @@ class Play extends Phaser.Scene {
             fixedWidth: 100
         }
         this.p1Score=0
-        this.scoreLeft = this.add.text(game.config.width - borderUISize - borderPadding*8, borderUISize + borderPadding*2, this.p1Score, this.scoreConfig)
-        this.scoreLeft.backgroundColor = '0xffffff'
+        this.scoreLeft = this.add.text(game.config.width - borderUISize - borderPadding*10, borderUISize + borderPadding*2, this.p1Score, this.scoreConfig).setOrigin(0, 0).setDepth(104)
+        this.scoreLeft.setBackgroundColor('#ffffff')
         // GAME OVER flag
         this.gameOver = false
 
-        // 60-second play clock
         this.scoreConfig.fixedWidth = 0
         this.player.setDepth(100)
         this.walls=[]
@@ -48,56 +44,66 @@ class Play extends Phaser.Scene {
         this.counter=0
         this.currHeight=0
         this.prevHeight=game.config.height/2
+        this.speed=-2
+        this.boomed=false
     }
 
     addWall(y) {
-        let wall = new Obstacles(this, game.config.width, y-400-game.config.height/2, 'wall').setOrigin(0, 0)
+        let wall = new Obstacles(this, game.config.width, y-(340+(30*(1.0001**(-this.p1Score))))-game.config.height/2, 'wall').setOrigin(0, 0)
         this.walls.push(wall)
-        wall = new Obstacles(this, game.config.width, y+400-game.config.height/2, 'wall').setOrigin(0, 0)
+        wall = new Obstacles(this, game.config.width, y+(340+(30*(1.0001**(-this.p1Score))))-game.config.height/2, 'wall').setOrigin(0, 0)
         this.walls.push(wall)
     }
 
     update() {
-        //this.wall = new Obstacles(this, game.config.width/2 , 0, 'wall').setOrigin(0, 0)
           // check key input for restart
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keySPACE)) {
-            this.scene.restart()
+            this.time.delayedCall(60, () => {this.scene.restart()}, null, this)
         }
         this.counter++
         if (this.counter>7){
             this.counter=0
-            this.currHeight=Math.min(Math.max((this.prevHeight+((Phaser.Math.Between(-50, 50)))), 0), 480)
+            this.currHeight=Math.min(Math.max((this.prevHeight+((Phaser.Math.Between(-28, 28)))), 100), 380)
             this.addWall(this.currHeight)
             this.prevHeight=this.currHeight
         }
         this.starfield.tilePositionX += 1
         // check collisions
         for (let i of this.walls){
-            if(this.checkCollision(this.player, i)) {
+            if(!this.boomed && this.checkCollision(this.player, i)) {
+                this.boomed=true
                 //this.player.reset()
                 this.shipExplode(this.player)
                 this.gameOver=true
             } 
         }
         if(!this.gameOver) {               
-            this.player.update()         // update rocket sprite
+            this.player.update()  
             for (let i of this.walls){
                 i.update()
             }
         } 
         if (this.gameOver){
-            this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', this.scoreConfig).setOrigin(0.5)
-            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press SPACE to Restart', this.scoreConfig).setOrigin(0.5)
+            this.add.text(game.config.width/2, game.config.height/2-64, 'GAME OVER', this.scoreConfig).setOrigin(0.5)
+            this.add.text(game.config.width/2, game.config.height/2 + 64, 'PRESS SPACE TO RESTART', this.scoreConfig).setOrigin(0.5)
+            this.add.text(game.config.width/2, game.config.height/2, 'YOU TRAVELLED '+ this.p1Score +' METERS', this.scoreConfig).setOrigin(0.5)
         }
-        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keySPACE)) {
-            this.scene.start("menuScene")
-        }
-        this.p1Score++
-        this.scoreLeft.text = this.p1Score    
+        if (!this.gameOver){this.p1Score++}
+        this.scoreLeft.text = this.p1Score+"m"
+        if (!this.gameOver){
+            if (Phaser.Input.Keyboard.JustDown(keySPACE)){
+                this.sound.stopByKey('sfx-down')
+                this.sound.play('sfx-up') 
+            }
+            if (Phaser.Input.Keyboard.JustUp(keySPACE)){
+                this.sound.stopByKey('sfx-up')
+                this.sound.play('sfx-down') 
+            }
+        } 
     }
 
     checkCollision(rocket, ship) {
-        // simple AABB checking
+        // collision implementation stolen from rocket patrol
         if (rocket.x < ship.x + ship.width && 
           rocket.x + rocket.width > ship.x && 
           rocket.y < ship.y + ship.height &&
@@ -109,17 +115,14 @@ class Play extends Phaser.Scene {
     }
 
     shipExplode(ship) {
-        // temporarily hide ship
+        // function once collision is detected also stolen from rocket patrol with minor changes
         ship.alpha = 0                         
-        // create explosion sprite at ship's position
         let boom = this.add.sprite(ship.x, ship.y, 'explosion').setOrigin(0, 0)
-        boom.anims.play('explode')           // play explode animation
-        boom.on('animationcomplete', () => { // callback after ani completes
-          ship.reset()                       // reset ship position
-          //ship.alpha = 1                     // make ship visible again
-          boom.destroy()                     // remove explosion sprite
+        boom.anims.play('explode')           
+        boom.on('animationcomplete', () => { 
+          ship.reset()                     
+          boom.destroy()                     
         })
-        // score add and text update
-        //this.sound.play('sfx-explosion')   
+        this.sound.play('sfx-explosion')
     }
 }

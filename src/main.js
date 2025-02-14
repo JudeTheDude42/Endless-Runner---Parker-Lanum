@@ -1,6 +1,10 @@
 // Parker Lanum
 // 2/12/2025
-// 
+//
+// Other than an interesting implementation of recursively created obstacle walls that works similarly to the paddle parkour version, I'd say
+// I am most proud of the way difficulty scales. The distance between the wall obstacles, represented by (340+(30*(1.0001**(-this.p1Score)))) 
+// in the AddWall() function is an asymptotic function that brings the gap between the walls closer to 340 pixels (a very tight space) as the 
+// player gets further into Planet Crimson.
 
 "use strict"
 

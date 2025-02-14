@@ -17,9 +17,11 @@ class Menu extends Phaser.Scene {
             endFrame: 3
         })
         // load audio
-        //this.load.audio('sfx-select', './assets/sfx-select.wav')
-        //this.load.audio('sfx-explosion', './assets/sfx-explosion.wav')
-        //this.load.audio('sfx-shot', './assets/sfx-shot.wav')
+        this.load.audio('sfx-select', './assets/sfx-select.wav')
+        this.load.audio('sfx-explosion', './assets/sfx-explosion.wav')
+        this.load.audio('sfx-up', './assets/sfx-up.wav')
+        this.load.audio('sfx-down', './assets/sfx-down.wav')
+        this.load.audio('bgm', './assets/bgm.wav')
     }
 
     create() {
@@ -36,10 +38,10 @@ class Menu extends Phaser.Scene {
 
         let menuConfig={
             fontFamily: 'Courier',
-            fontsize: '28px',
-            backgroundColor: '#F3B141',
-            color: '#843605',
-            align: 'right',
+            fontsize: '50px',
+            backgroundColor: '#a30000',
+            color: '#000000',
+            align: 'center',
             padding: {
                 top: 5,
                 bottom: 5,
@@ -48,21 +50,18 @@ class Menu extends Phaser.Scene {
         }
         this.add.text(game.config.width/2, game.config.height/2 - borderUISize-borderPadding, 'INTO PLANET CRIMSON', menuConfig).setOrigin(0.5)
         this.add.text(game.config.width/2, game.config.height/2, 'HOLD SPACE TO FLY UP AND RELEASE TO FLY DOWN! PRESS SPACE TO PLAY', menuConfig).setOrigin(0.5)
+        this.add.text(game.config.width/2, game.config.height/2 + borderUISize+borderPadding, 'GAMEPLAY, ASSETS AND SOUND EFFECTS CREATED BY PARKER LANUM', menuConfig).setOrigin(0.5)
+        this.add.text(game.config.width/2, game.config.height/2 + borderUISize*2 +borderPadding, 'MUSIC CREATED BY ANDREWM PRAHLOW', menuConfig).setOrigin(0.5)
         menuConfig.backgroundColor='#00FF00'
         menuConfig.color='#000'
-        //this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding, 'Press left for Easy Mode and right for Hard Mode', menuConfig).setOrigin(0.5)
         // define keys
         keySPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
     }
 
     update() {
         if (Phaser.Input.Keyboard.JustDown(keySPACE)) {
-          // easy mode
-          game.settings = {
-            spaceshipSpeed: 3,
-            gameTimer: 60000    
-          }
-          //this.sound.play('sfx-select')
+          this.sound.play('sfx-select')
+          this.sound.play('bgm', { loop: true })        
           this.scene.start('playScene')    
         }
     }
